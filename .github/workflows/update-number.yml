@@ -1,12 +1,14 @@
 name: Update daily random number
 on:
   schedule:
-    - cron: '0 12 * * *'   # 8 AM Eastern = 12:00 UTC
-  workflow_dispatch:        # allows manual run
+    - cron: '0 20 * * *'   # 4 PM Eastern = 20:00 UTC
+  workflow_dispatch:        # allow manual trigger
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write       # ensures git push works
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -14,7 +16,7 @@ jobs:
       - name: Generate new random number
         run: |
           NUMBER=$(( (RANDOM % 100) + 1 ))
-          DATE=$(date -u +"%Y-%m-%d")
+          DATE=$(date -u +"%Y-%m-%d %H:%M UTC")
           cat > index.html <<EOF
           <!DOCTYPE html>
           <html lang="en">
@@ -30,7 +32,7 @@ jobs:
           </head>
           <body>
             <h1>$NUMBER</h1>
-            <p>Random number for $DATE (UTC)</p>
+            <p>Random number for $DATE</p>
           </body>
           </html>
           EOF
