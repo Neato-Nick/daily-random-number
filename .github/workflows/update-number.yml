@@ -1,0 +1,44 @@
+name: Update daily random number
+on:
+  schedule:
+    - cron: '0 12 * * *'   # 8 AM Eastern = 12:00 UTC
+  workflow_dispatch:        # allows manual run
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate new random number
+        run: |
+          NUMBER=$(( (RANDOM % 100) + 1 ))
+          DATE=$(date -u +"%Y-%m-%d")
+          cat > index.html <<EOF
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Daily Random Number</title>
+            <style>
+              body { font-family: Arial, sans-serif; text-align: center; margin-top: 15%; }
+              h1 { font-size: 5em; color: #0077cc; margin-bottom: 0; }
+              p { font-size: 1.2em; color: #444; }
+            </style>
+          </head>
+          <body>
+            <h1>$NUMBER</h1>
+            <p>Random number for $DATE (UTC)</p>
+          </body>
+          </html>
+          EOF
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add index.html
+          git commit -m "Daily update: $(date -u)" || echo "No changes to commit"
+          git push
